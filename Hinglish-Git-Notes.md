@@ -261,91 +261,112 @@ Untracked → Staged → Committed → Modified → Staged → Committed → ...
 
 ---
 
-## 56:59 - Deep Dive into git commit
+## Advanced Git Commit: Deep Dive
 
-**`git commit`** Git ka **sabse important** command hai. Ye tumhare staged changes ko **permanently save** karta hai repository mein.
+`git commit` sirf code save karne ke liye nahi hai, balki yeh aapke project ki **history** aur **documentation** ka sabse bada pillar hai.
+
+---
+
+### 🏗 1. Conventional Commits (Industry Standard)
+Professional teams ek fixed format use karti hain taaki automated tools (jaise semantic release) samajh sakein ki version number kab change karna hai.
+
+**Format:** `<type>(<scope>): <description>`
+
+| Type | Meaning | Example |
+| :--- | :--- | :--- |
+| **`feat`** | Naya feature add karna | `feat(auth): add JWT token validation` |
+| **`fix`** | Koi bug fix karna | `fix(api): resolve null pointer in user-route` |
+| **`refactor`** | Code cleanup (na bug fix, na feature) | `refactor: simplify database connection logic` |
+| **`docs`** | Documentation mein change | `docs: update README with API endpoints` |
+| **`style`** | Formatting (comma, semicolon, space) | `style: linting fixes in home component` |
+| **`perf`** | Performance improve karne wala code | `perf: optimize image loading speed` |
+| **`chore`** | Build tools ya dependencies update | `chore: upgrade tailwind to v4.0` |
+
+---
+
+### 🛠 2. Advanced Commit Clauses & Commands
+
+**A. Modifying the Recent Past (`--amend`)**
+Agar aapne commit kar diya par kuch bhool gaye (e.g., file add karna ya typo), toh naya commit banane ki zarurat nahi hai.
+```bash
+# Sirf message change karne ke liye
+git commit --amend -m "Updated correct message"
+
+# Bhooli hui file add karne ke liye
+git add .
+git commit --amend --no-edit
+```
+> **Rule:** Kabhi bhi wo commit `--amend` mat karo jo aap **Push** kar chuke ho. Isse remote history break ho sakti hai.
+
+**B. Interactive Patch Commits (`-p`)**
+Maano aapne `index.js` mein 50 lines likhi hain, par aap chahte ho ki 25 lines ek commit mein jayein aur baaki 25 dusre mein. 
+```bash
+git commit -p
+```
+Git aapko code ke **hunks** (tukde) dikhayega. Aap `y` (yes), `n` (no), ya `s` (split) daba kar chun sakte ho ki kitna code commit karna hai.
+
+
+
+**C. Signing Commits (`-S`)**
+Open source aur high-security projects mein commits ko GPG keys se sign kiya jata hai. Isse GitHub par "Verified" badge milta hai.
+```bash
+git commit -S -m "Secure and verified commit"
+```
+
+---
+
+### 📝 3. Anatomy of a Great Commit Message
+Bade changes ke liye hamesha **Multi-line Commit** ka use karein:
 
 ```bash
-git commit -m "Add login feature"
-```
-
-### Commit kya hai exactly?
-
-Ek commit ek **snapshot** hai tumhare poore project ki us moment ki. Jaise tum ek **photo** le rahe ho apne poore project ki. Ye photo permanently save ho jaati hai aur tum kabhi bhi is photo (state) pe wapas aa sakte ho.
-
-### Commit ke andar kya hota hai?
-
-Har commit mein ye information hoti hai:
-
-```
-Commit: a1b2c3d4e5f6... (unique hash/ID)
-├── Author: Tumhara Naam <email>
-├── Date: Wed Dec 25 10:30:00 2024
-├── Message: "Add login feature"
-├── Parent: 9x8y7z... (pichle commit ka hash)
-├── Tree: (snapshot of all files at this point)
-└── Changes: (kya badla gaya)
-```
-
-### SHA-1 Hash (Commit ID)
-
-Har commit ko ek **unique ID** milti hai jo **40 characters** ki hoti hai. Jaise:
-
-```
-a1b2c3d4e5f67890abcdef1234567890abcdef12
-```
-
-Ye **SHA-1 hashing algorithm** se generate hoti hai. Ye ID commit ke content (files, message, author, timestamp, parent) se generate hoti hai. Do alag commits ki ID **kabhi same nahi** ho sakti. Ye ID use hoti hai commit ko refer karne ke liye.
-
-### Commit Message kyun important hai?
-
-```bash
-# ❌ BAD - Kuch samajh nahi aata
-git commit -m "changes"
-git commit -m "fix"
-git commit -m "update"
-
-# ✅ GOOD - Clear aur descriptive
-git commit -m "Fix login button not working on mobile"
-git commit -m "Add email validation in signup form"
-git commit -m "Remove unused CSS from homepage"
-```
-
-Commit message se baad mein pata chalta hai ki kya change hua tha. 6 mahine baad jab tum apna code dekhoge toh ye messages hi tumhari madad karenge.
-
-### Different ways to commit:
-
-```bash
-# Method 1: Simple (most common)
-git commit -m "message"
-
-# Method 2: Text editor mein detailed message likhna
 git commit
-# Ye tumhara default text editor kholega (vim/nano/vscode)
-# Yahan pe tum multi-line detailed message likh sakte ho
+```
+*(Editor khulne par niche diya gaya format likhein)*
 
-# Method 3: Staging + Commit ek saath (SHORTCUT)
-git commit -a -m "message"
-# Ya
-git commit -am "message"
-# Ye sirf TRACKED (purani modified) files ke liye kaam karta hai
-# NAYE (untracked) files ke liye pehle git add karna padega
+```text
+Summarize changes in around 50 characters (Subject Line)
+
+More detailed explanatory text, if necessary. Wrap it to 
+about 72 characters. Focus on:
+- WHY this change was made.
+- HOW it addresses the issue.
+- Side effects or breaking changes.
+
+Fixes #402 (Link to the issue)
 ```
 
-### Commit ki Chain (History)
+---
 
+### 💡 4. Expert Pro-Tips
+
+**Atomic Commits**
+Hamesha **"One Logical Change = One Commit"** ka rule follow karein. 
+*   **Galat:** Ek hi commit mein "Navbar fix kiya, DB connect kiya, aur Typo sahi kiya".
+*   **Sahi:** Teeno ke liye 3 alag-alag chote commits. Isse `git revert` karna asaan ho jata hai.
+
+**Empty Commits**
+Kabhi-kabhi aapko bina kisi code change ke commit karna padta hai (jaise CI/CD pipeline test karne ke liye).
+```bash
+git commit --allow-empty -m "Chore: trigger deployment pipeline"
 ```
-Commit 1 (Initial) ← Commit 2 ← Commit 3 ← Commit 4 (HEAD)
+
+**Verbose Mode**
+Commit karte waqt agar aap dekhna chahte hain ki exactly kya changes ja rahe hain:
+```bash
+git commit -v
 ```
+Yeh editor ke niche poora **diff** dikhayega taaki aap double-check kar sakein.
 
-Har commit apne **parent commit** ko point karta hai (except first commit). Isse ek **chain** banti hai. **HEAD** pointer hamesha current/latest commit pe hota hai.
+---
 
-### Theory: Commit Best Practices
+### 📊 Summary Table
 
-1. **Chote aur focused commits karo** - Ek commit mein ek kaam. "Login fix kiya" aur "CSS change kiya" ko alag commit karo.
-2. **Working code commit karo** - Aisa code commit mat karo jo tut raha ho (broken code).
-3. **Meaningful messages likho** - Future mein tum ya tumhara teammate padhega.
-4. **Frequently commit karo** - Bohot saara kaam karke ek bada commit mat karo.
+| Feature | Command | Benefits |
+| :--- | :--- | :--- |
+| **Quick Fix** | `git commit --amend` | History clean rakhta hai. |
+| **Partial Save** | `git commit -p` | Mixed code ko split karne ke liye. |
+| **Shortcut** | `git commit -am` | Add aur commit ek saath (tracked files). |
+| **Automation** | `feat/fix/...` | Professional changelogs generate karta hai. |
 
 ---
 
